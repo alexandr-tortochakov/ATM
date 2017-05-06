@@ -1,6 +1,7 @@
+package ru.tortochakov.atm;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ class ATMTest {
     }
 
     @Test
-    void takeBills() {
+    void testTakeBills() {
         Map<Integer, Integer> teamo = new HashMap<>();
         atm.giveBills(10, true);
         atm.giveBills(10, true);
@@ -52,7 +53,7 @@ class ATMTest {
     }
 
     @Test
-    void giveBills() {
+    void testGiveBills() {
         Map<Integer, Integer> temp = atm.giveBills(1000, true);
         assertEquals(sum(temp), 1000);
         temp = atm.giveBills(3570, true);
@@ -70,7 +71,7 @@ class ATMTest {
     }
 
     @Test
-    void displayState() {
+    void testDisplayState() {
         String s = atm.displayState();
         assertEquals(s, "6660000\n" +
                 "6000\n" +

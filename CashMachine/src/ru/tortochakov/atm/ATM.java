@@ -1,4 +1,4 @@
-import com.sun.tools.doclets.formats.html.SourceToHTMLConverter;
+package ru.tortochakov.atm;
 
 import java.util.*;
 
@@ -25,20 +25,21 @@ public class ATM implements ATMAbstract {
 
 
     @Override
-    public void takeBills(Map<Integer, Integer> bills) {
+    public boolean takeBills(Map<Integer, Integer> bills) {
         for (Map.Entry<Integer, Integer> entry : bills.entrySet()) {
             int billWorth = entry.getKey();
             int billAmount = entry.getValue();
             int current = content.get(billWorth);
             if (MAX_CAPACITY - nBills == 0) {
                 System.out.println("Низя!");
-                return;
+                return false;
             } else if (MAX_CAPACITY - nBills >= billAmount) {
                 content.put(billWorth, billAmount + current);
                 nBills += billAmount;
                 totalMoney += entry.getKey() * entry.getValue();
             }
         }
+        return true;
     }
 
     @Override
