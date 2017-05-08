@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +13,6 @@ import static javax.swing.BoxLayout.X_AXIS;
 
 public class GUI {
     JFrame frame = new JFrame("Cash Machine");
-//    JPanel mainPanel = new JPanel();
     JPanel buttonPanel = new JPanel();
     JPanel displayPanel = new JPanel();
     JPanel moneyPanel = new JPanel();
@@ -37,29 +38,21 @@ public class GUI {
     JLabel w500FieldLabel = new JLabel("500");
     JLabel w1000FieldLabel = new JLabel("1000");
     JLabel w5000FieldLabel = new JLabel("5000");
-
+    ButtonGroup groupButtons = new ButtonGroup();
+    JRadioButton largeButton = new JRadioButton("Large");
+    JRadioButton smallButton = new JRadioButton("Small");
 
     public void go() {
-        frame.setSize(450, 250);
+        frame.setSize(600, 350);
         frame.setResizable(false);
-        frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-//        buttonPanel = mainPanel;
-//        displayPanel = mainPanel;
-//        moneyPanel = mainPanel;
-//        sumPanel = mainPanel;
-
-        //buttonPanel.setSize(600,10);
-//        mainPanel.add(buttonPanel);
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.add(displayButton);
         buttonPanel.add(takeButton);
         buttonPanel.add(giveButton);
         frame.getContentPane().add(buttonPanel, BorderLayout.EAST);
 
-        //displayPanel.setSize(600, 50);
-//        mainPanel.add(displayPanel);
         displayArea.setRows(10);
         displayArea.setColumns(40);
         displayArea.setEditable(false);
@@ -73,8 +66,6 @@ public class GUI {
         w1000Field.setColumns(4);
         w5000Field.setColumns(4);
 
-        //moneyPanel.setSize(600, 10);
-//        mainPanel.add(moneyPanel);
         moneyPanel.setLayout(new GridLayout(3, 2));
         w10FieldLabel.setLabelFor(w10Field);
         moneyPanel.add(w10FieldLabel);
@@ -102,12 +93,19 @@ public class GUI {
         worthsFields.put(500, w500Field);
         worthsFields.put(1000, w1000Field);
         worthsFields.put(5000, w5000Field);
+        for (Map.Entry<Integer, JTextField> entry : worthsFields.entrySet()) {
+            entry.getValue().addKeyListener(new MoneyFieldHook());
+        }
 
-//        mainPanel.add(sumPanel);
-        wantedSumField.setColumns(10);
+        wantedSumField.setColumns(15);
         sumLabel.setLabelFor(wantedSumField);
         sumPanel.add(sumLabel);
         sumPanel.add(wantedSumField);
+        groupButtons.add(largeButton);
+        groupButtons.add(smallButton);
+        sumPanel.add(largeButton);
+        largeButton.setSelected(true);
+        sumPanel.add(smallButton);
         frame.getContentPane().add(sumPanel, BorderLayout.CENTER);
 
         displayButton.addActionListener(new ActionListener() {
@@ -120,8 +118,12 @@ public class GUI {
         giveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (wantedSumField.getText().length() == 0) {
+                    displayArea.setText("Nothing was entered");
+                    return;
+                }
                 int sum = Integer.parseInt(wantedSumField.getText());
-                Map<Integer, Integer> bills = atm.giveBills(sum, true);
+                Map<Integer, Integer> bills = atm.giveBills(sum, largeButton.isSelected());
                 if (bills == null) {
                     displayArea.setText("Do not have enough money");
                     return;
@@ -141,6 +143,10 @@ public class GUI {
                 Map<Integer, Integer> bills = new HashMap<>();
                 for (Map.Entry<Integer, JTextField> entry : worthsFields.entrySet()
                         ) {
+                    if (entry.getValue().getText().length() == 0) {
+                        entry.getValue().setText("0");
+                        continue;
+                    }
                     int nBills = Integer.parseInt(entry.getValue().getText());
                     if (nBills > 0) {
                         bills.put(entry.getKey(), nBills);
@@ -154,9 +160,23 @@ public class GUI {
                 }
             }
         });
+        wantedSumField.addKeyListener(new MoneyFieldHook());
+        frame.setVisible(true);
     }
 
-    private void  resetWorthFields() {
+    private class MoneyFieldHook extends KeyAdapter {
+        @Override
+        public void keyTyped(KeyEvent e) {
+            super.keyTyped(e);
+            if ('0' <= e.getKeyChar() && e.getKeyChar() <= '9') {
+                return;
+            }
+            e.consume();
+            displayArea.setText("Only integers are allowed");
+        }
+    }
+
+    private void resetWorthFields() {
         for (Map.Entry<Integer, JTextField> entry : worthsFields.entrySet()
                 ) {
             entry.getValue().setText("0");
@@ -167,7 +187,7 @@ public class GUI {
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e){
+        } catch (Exception e) {
         }
         GUI gui = new GUI();
         gui.go();
